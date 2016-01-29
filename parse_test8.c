@@ -7,6 +7,7 @@
 	/*char* lPtr;*/
 
 	#define MAX_LINE_LENGTH 255
+	#define symbolTableLength 500
 	enum{
 	   DONE, OK, EMPTY_LINE, LABEL
 	};
@@ -20,7 +21,7 @@
 		char* name;
 	} sym_table;
 
-	sym_table symbol_table[500]; /*make symbol table array*/
+	sym_table symbol_table[symbolTableLength]; /*make symbol table array*/
 
 	int label = 0; /*true if parser found label*/
 
@@ -79,85 +80,85 @@
 		if (strcmp(inStr,"add") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"and") == 0){
+		else if (strcmp(inStr,"and") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"br") == 0){
+		else if (strcmp(inStr,"br") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"brn") == 0){
+		else if (strcmp(inStr,"brn") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"brp") == 0){
+		else if (strcmp(inStr,"brp") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"brnp") == 0){
+		else if (strcmp(inStr,"brnp") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"brz") == 0){
+		else if (strcmp(inStr,"brz") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"brnz") == 0){
+		else if (strcmp(inStr,"brnz") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"brzp") == 0){
+		else if (strcmp(inStr,"brzp") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"brnzp") == 0){
+		else if (strcmp(inStr,"brnzp") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"halt") == 0){
+		else if (strcmp(inStr,"halt") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"jmp") == 0){
+		else if (strcmp(inStr,"jmp") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"jsr") == 0){
+		else if (strcmp(inStr,"jsr") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"jsrr") == 0){
+		else if (strcmp(inStr,"jsrr") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"ldb") == 0){
+		else if (strcmp(inStr,"ldb") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"ldw") == 0){
+		else if (strcmp(inStr,"ldw") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"lea") == 0){
+		else if (strcmp(inStr,"lea") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"nop") == 0){
+		else if (strcmp(inStr,"nop") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"not") == 0){
+		else if (strcmp(inStr,"not") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"ret") == 0){
+		else if (strcmp(inStr,"ret") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"lshf") == 0){
+		else if (strcmp(inStr,"lshf") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"rshfl") == 0){
+		else if (strcmp(inStr,"rshfl") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"rshfa") == 0){
+		else if (strcmp(inStr,"rshfa") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"rti") == 0){
+		else if (strcmp(inStr,"rti") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"stb") == 0){
+		else if (strcmp(inStr,"stb") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"stw") == 0){
+		else if (strcmp(inStr,"stw") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"trap") == 0){
+		else if (strcmp(inStr,"trap") == 0){
 			return 0;
 		}
-		if (strcmp(inStr,"xor") == 0){
+		else if (strcmp(inStr,"xor") == 0){
 			return 0;
 		}
 		else{
@@ -165,6 +166,18 @@
 		}
 
 	}
+
+
+int returnOffset(char* symbol, int pointer){
+	for(int x=0; x<symbolTableLength; x++){
+			if(strcmp(symbol_table[x].name, symbol) == 0){
+				return pointer - symbol_table[x].addr-1;
+			}
+	}
+
+	return -1;
+
+}
 
 int toNum( char * pStr ){
    char * t_ptr;
@@ -303,7 +316,17 @@ int toNum( char * pStr ){
 					printf("mach_code: %i\n", mach_code);
 			
 				}
+				
+				else if (strcmp(lOpcode, "ldb") == 0){
+
+				}
+
+				else if (strcmp(lOpcode, "ldb") == 0){
+
+				}
+
 				addrCtr++;
+
 		}
 	   } while( lRet != DONE );
 

@@ -260,7 +260,8 @@ int main (){
 	  
 	   FILE * pOutfile;
 	   pOutfile = fopen( "data.out", "w" );
-	  
+
+	   bool endDefined = false;
 	   FILE * lInfile;
 	   lInfile = fopen("data.in", "r");	/* open the input file */
 	  
@@ -271,8 +272,19 @@ int main (){
                  	orig = toNum(lArg1);
 			printf("%i\n",orig);
                 }
-	        
+
+        else if (strcmp(lOpcode, ".end") == 0){
+                 	endDefined = true;
+                }
+
 	   } while (lRet != DONE);
+
+
+	   //If there is no .END, then throw an error
+	   	if(endDefined == false){
+	   		error(4);
+	   	}
+
 
         /*1st pass: generate symbol table*/
 	   /* lInfile = fopen("data.in", "r");*/     /* open the input file */
@@ -336,6 +348,20 @@ int main (){
 				}
 				/*fprintf( pOutfile, "0x%.4X\n", mach_code);*/
 				printf("MACH_CODE!:  %i\n", mach_code);
+
+				else if (strmcmp(lOpcode, "add") == 0){
+					mach_code = (ADD << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
+					mach_code &= 0xFFC0;
+					//see if the number being added is a constant number
+					if(strcmp(lArg3[0], "x") == 0 || strcmp(lArg3[0], "#"){
+						mach_code += toNum(lArg3);
+					}
+					//Argument 3 is a register
+					else{
+						mach_code += lArg3[0];
+					}
+				}
+
 				addrCtr++;
 
 		}

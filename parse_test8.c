@@ -244,6 +244,7 @@ int toNum( char * pStr ){
 	   int lRet;
 	   int i = 0;
 	   int ctr = 0;
+	   int addrCtr; /*used in 2nd pass of program*/
 	   int mach_code = 0;
 	   int arg1_num = 0;
 	   int orig; /*start addr of program*/
@@ -280,7 +281,7 @@ int toNum( char * pStr ){
 	    /*2nd pass: generate machine code*/
 	   lInfile = fopen("data.in", "r");     /* open the input file */
 	   do
-	   {
+	   {	addrCtr = orig;
 	   	lRet = readAndParse( lInfile, lLine, &lLabel, &lOpcode, &lArg1, &lArg2, &lArg3, &lArg4 );
 		printf("label:%s", lLabel);
 		printf(" opcode:%s", lOpcode);
@@ -295,11 +296,14 @@ int toNum( char * pStr ){
 				if (strcmp(lOpcode, "ldb") == 0){
 					 /*extract reg number from arguments, then shift to correct place*/
 					mach_code = (LDB << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6); 
-					 /* calculate offset */
 
+					 /* put constant in bits[5:0]*/
+					mach_code &= 0xFFC0;
+					mach_code += toNum(lArg3);
 					printf("mach_code: %i\n", mach_code);
 			
 				}
+				addrCtr++;
 		}
 	   } while( lRet != DONE );
 

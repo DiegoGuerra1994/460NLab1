@@ -13,7 +13,7 @@
 	};
 
 	enum opcode{
-		BR, ADD, LDB, STB
+		BR, ADD, LDB, STB, JSR, AND, LDW, STW, RTI, XOR, JMP, SHF, LEA, TRAP
 	};
 
 	typedef struct table{
@@ -320,7 +320,28 @@ int main (){
 				if (strcmp(lOpcode, ".orig") == 0){
 					fprintf( pOutfile, "0x%.4X\n", orig);
 				}
-				if (strcmp(lOpcode, "ldb") == 0){
+
+				if (strmcmp(lOpcode, "BR") == 0){
+					//need condition for n, z, p, 
+				}
+
+				else if (strmcmp(lOpcode, "add") == 0){
+					mach_code = (ADD << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
+					mach_code &= 0xFFC0; //clearing the last 6 bits
+					//see if the number being added is a constant number
+					if(strcmp(lArg3[0], "x") == 0 || strcmp(lArg3[0], "#"){
+						mach_code |= x10; //Changing the 5th bit to 1 since we are adding a constant
+						mach_code += toNum(lArg3);
+					}
+					//Argument 3 is a register
+					else{
+						mach_code += lArg3[0];
+					}
+					fprintf( pOutfile, "0x%.4X\n", mach_code);
+				}
+
+
+				else if (strcmp(lOpcode, "ldb") == 0){
 					 /*extract reg number from arguments, then shift to correct place*/
 					mach_code = (LDB << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6); 
 
@@ -343,24 +364,21 @@ int main (){
 
 				}
 
-				else if (strcmp(lOpcode, "ldb") == 0){
-
+				else if (strcmp(lOpcode, "jsr") == 0 || strcmp(lOpcode, "jsrr") == 0){
+						
+						if (strcmp(lOpcode, "jsr") == 0)
+						{
+							mach_code = (JSR << 12) + 1<<11;
+						}
+						else 
+						{
+							mach_code = (JSR << 12 + lArg1<<5);
+						}
+						 
 				}
 				/*fprintf( pOutfile, "0x%.4X\n", mach_code);*/
 				printf("MACH_CODE!:  %i\n", mach_code);
 
-				else if (strmcmp(lOpcode, "add") == 0){
-					mach_code = (ADD << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
-					mach_code &= 0xFFC0;
-					//see if the number being added is a constant number
-					if(strcmp(lArg3[0], "x") == 0 || strcmp(lArg3[0], "#"){
-						mach_code += toNum(lArg3);
-					}
-					//Argument 3 is a register
-					else{
-						mach_code += lArg3[0];
-					}
-				}
 
 				addrCtr++;
 

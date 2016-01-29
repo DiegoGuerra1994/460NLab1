@@ -7,6 +7,7 @@
 	/*char* lPtr;*/
 
 	#define MAX_LINE_LENGTH 255
+	#define symbolTableLength 500
 	enum{
 	   DONE, OK, EMPTY_LINE, LABEL
 	};
@@ -20,7 +21,7 @@
 		char* name;
 	} sym_table;
 
-	sym_table symbol_table[500]; /*make symbol table array*/
+	sym_table symbol_table[symbolTableLength]; /*make symbol table array*/
 
 	int label = 0; /*true if parser found label*/
 
@@ -165,6 +166,18 @@
 		}
 
 	}
+
+
+int returnOffset(char* symbol, int pointer){
+	for(int x=0; x<symbolTableLength; x++){
+			if(strcmp(symbol_table[x].name, symbol) == 0){
+				return pointer - symbol_table[x].addr-1;
+			}
+	}
+
+	return -1;
+
+}
 
 int toNum( char * pStr ){
    char * t_ptr;

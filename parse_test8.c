@@ -261,7 +261,7 @@ int main (){
 	   FILE * pOutfile;
 	   pOutfile = fopen( "data.out", "w" );
 
-	   bool endDefined = false;
+	   int endDefined = 0;
 	   FILE * lInfile;
 	   lInfile = fopen("data.in", "r");	/* open the input file */
 	  
@@ -274,14 +274,14 @@ int main (){
                 }
 
         else if (strcmp(lOpcode, ".end") == 0){
-                 	endDefined = true;
+                 	endDefined = 1;
                 }
 
 	   } while (lRet != DONE);
 
 
-	   //If there is no .END, then throw an error
-	   	if(endDefined == false){
+	   /*If there is no .END, then throw an error*/
+	   	if(endDefined == 0){
 	   		error(4);
 	   	}
 
@@ -321,21 +321,21 @@ int main (){
 					fprintf( pOutfile, "0x%.4X\n", orig);
 				}
 
-				if (strmcmp(lOpcode, "BR") == 0){
-					//need condition for n, z, p, 
+				if (strcmp(lOpcode, "BR") == 0){
+					/*need condition for n, z, p,*/ 
 				}
 
-				else if (strmcmp(lOpcode, "add") == 0){
+				else if (strcmp(lOpcode, "add") == 0){
 					mach_code = (ADD << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
-					mach_code &= 0xFFC0; //clearing the last 6 bits
-					//see if the number being added is a constant number
-					if(strcmp(lArg3[0], "x") == 0 || strcmp(lArg3[0], "#"){
-						mach_code |= x10; //Changing the 5th bit to 1 since we are adding a constant
+					mach_code &= 0xFFC0; /*clearing the last 6 bits*/
+					/*see if the number being added is a constant number*/
+					if( (lArg3[0] == 'x') || (lArg3[0] == '#')){
+						mach_code |= 0x10; /*Changing the 5th bit to 1 since we are adding a constant*/
 						mach_code += toNum(lArg3);
 					}
-					//Argument 3 is a register
+					/*Argument 3 is a register*/
 					else{
-						mach_code += lArg3[0];
+						mach_code += (lArg3[1] - 0x30);
 					}
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
@@ -372,7 +372,7 @@ int main (){
 						}
 						else 
 						{
-							mach_code = (JSR << 12 + lArg1<<5);
+							mach_code = (JSR << 12) + ((lArg1[1] - 0x30) << 5);
 						}
 						 
 				}

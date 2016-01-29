@@ -169,7 +169,8 @@
 
 
 int returnOffset(char* symbol, int pointer){
-	for(int x=0; x<symbolTableLength; x++){
+	int x;
+	for(x=0; x < symbolTableLength; x++){
 			if(strcmp(symbol_table[x].name, symbol) == 0){
 				return pointer - symbol_table[x].addr-1;
 			}
@@ -244,15 +245,10 @@ int toNum( char * pStr ){
 	/*This has been changed from error code 3 to error code 4, see clarification 12 */
    }
 }
-	int writeText(int lInstr){
-		FILE * pOutfile;
-		pOutfile = fopen( "data.out", "w" );
-		/*...*/
-		fprintf( pOutfile, "0x%.4X\n", lInstr );	/* where lInstr is declared as an int */
-	}
 
 	/* Note: MAX_LINE_LENGTH, OK, EMPTY_LINE, and DONE are defined values */
-	int main (){
+int main (){
+
 	   char lLine[MAX_LINE_LENGTH + 1], *lLabel, *lOpcode, *lArg1, *lArg2, *lArg3, *lArg4;
 	   int lRet;
 	   int i = 0;
@@ -261,6 +257,10 @@ int toNum( char * pStr ){
 	   int mach_code = 0;
 	   int arg1_num = 0;
 	   int orig; /*start addr of program*/
+	  
+	   FILE * pOutfile;
+	   pOutfile = fopen( "data.out", "w" );
+	  
 	   FILE * lInfile;
 	   lInfile = fopen("data.in", "r");	/* open the input file */
 	  
@@ -271,11 +271,12 @@ int toNum( char * pStr ){
                  	orig = toNum(lArg1);
 			printf("%i\n",orig);
                 }
-
+	        
 	   } while (lRet != DONE);
 
         /*1st pass: generate symbol table*/
-	   lInfile = fopen("data.in", "r");     /* open the input file */	
+	   /* lInfile = fopen("data.in", "r");*/     /* open the input file */
+	   rewind(lInfile);	
 	   do{	
 	 	lRet = readAndParse( lInfile, lLine, &lLabel, &lOpcode, &lArg1, &lArg2, &lArg3, &lArg4 );
 		printf("1st pass");
@@ -291,8 +292,9 @@ int toNum( char * pStr ){
  		ctr++;
 	   } while( lRet != DONE );
 
-	    /*2nd pass: generate machine code*/
-	   lInfile = fopen("data.in", "r");     /* open the input file */
+	    /*writeText(mach_code);2nd pass: generate machine code*/
+	   /*lInfile = fopen("data.in", "r");*/     /* open the input file */
+	   rewind(lInfile);
 	   do
 	   {	addrCtr = orig;
 	   	lRet = readAndParse( lInfile, lLine, &lLabel, &lOpcode, &lArg1, &lArg2, &lArg3, &lArg4 );
@@ -304,7 +306,7 @@ int toNum( char * pStr ){
 		if( lRet != DONE && lRet != EMPTY_LINE ){
 			/*generate machine code (hex) given the parsed opcodes*/
 				if (strcmp(lOpcode, ".orig") == 0){
-					writeText(orig);
+					fprintf( pOutfile, "0x%.4X\n", orig);
 				}
 				if (strcmp(lOpcode, "ldb") == 0){
 					 /*extract reg number from arguments, then shift to correct place*/
@@ -314,21 +316,31 @@ int toNum( char * pStr ){
 					mach_code &= 0xFFC0;
 					mach_code += toNum(lArg3);
 					printf("mach_code: %i\n", mach_code);
+					fprintf( pOutfile, "0x%.4X\n", mach_code);
 			
-				}
-				
-				else if (strcmp(lOpcode, "ldb") == 0){
+				}				
+				else if (strcmp(lOpcode, "stb") == 0){
+					  /*extract reg number from arguments, then shift to correct place*/
+                                        mach_code = (STB << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
+
+                                         /* put constant in bits[5:0]*/
+                                        mach_code &= 0xFFC0;
+                                        mach_code += toNum(lArg3);
+                                        printf("mach_code: %i\n", mach_code);
+					fprintf( pOutfile, "0x%.4X\n", mach_code);
 
 				}
 
 				else if (strcmp(lOpcode, "ldb") == 0){
 
 				}
-
+				/*fprintf( pOutfile, "0x%.4X\n", mach_code);*/
+				printf("MACH_CODE!:  %i\n", mach_code);
 				addrCtr++;
 
 		}
 	   } while( lRet != DONE );
+	   fclose(pOutfile);
 
 	}
 

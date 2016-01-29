@@ -1,0 +1,5 @@
+   .ORIG x3000
+   LDB R7, R4, #5
+A  .FILL 0x4600	
+   .END
+

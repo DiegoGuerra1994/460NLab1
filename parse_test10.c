@@ -338,7 +338,7 @@ int main (){
 	   rewind(lInfile);
 	   do
 	   {	
-	   	
+	   	mach_code = 0;
 	   	lRet = readAndParse( lInfile, lLine, &lLabel, &lOpcode, &lArg1, &lArg2, &lArg3, &lArg4 );
 		printf("label:%s", lLabel);
 		printf(" opcode:%s", lOpcode);
@@ -435,7 +435,7 @@ int main (){
 						 
 				}
 
-				else if (strcmp(lOpcode, "and")){
+				else if (strcmp(lOpcode, "and") == 0){
 					mach_code = (AND << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
 					mach_code &= 0xFFC0; /*clearing the last 6 bits*/
 					/*see if the number being added is a constant number*/
@@ -450,24 +450,25 @@ int main (){
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 
-				else if (strcmp(lOpcode, "ldw")){
+				else if (strcmp(lOpcode, "ldw") == 0){
+					printf("This is ldw %i", LDW);
 					mach_code = (LDW << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
 					mach_code &= 0xFFC0;
 					mach_code += toNum(lArg3);
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
-				else if(strcmp(lOpcode, "stw")){
+				else if(strcmp(lOpcode, "stw") == 0){
 					mach_code = (STW << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
 					mach_code &= 0xFFC0;
 					mach_code += toNum(lArg3);
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
-				else if(strcmp(lOpcode, "rti")){
+				else if(strcmp(lOpcode, "rti") == 0){
 					mach_code = (RTI << 12);
 					mach_code &= 0xF000;
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
-				else if(strcmp(lOpcode, "xor")){
+				else if(strcmp(lOpcode, "xor") == 0){
 					mach_code = (XOR << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
 					mach_code &= 0xFFC0; /*clearing the last 6 bits*/
 					/*see if the number being added is a constant number*/
@@ -481,50 +482,51 @@ int main (){
 					}
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
-				else if(strcmp(lOpcode, "jmp")){
+				else if(strcmp(lOpcode, "jmp") == 0){
 					mach_code = (JMP << 12) + (lArg1[1] << 6);
 					mach_code &= 0xF1C0;
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
-				else if(strcmp(lOpcode, "ret")){
+				else if(strcmp(lOpcode, "ret") == 0){
 					mach_code = (JMP << 12) + 0x01C0;
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
-				else if(strcmp(lOpcode, "lshf")){
+				else if(strcmp(lOpcode, "lshf") == 0){
 					mach_code = (SHF << 12) + (lArg1[1] << 9)+(lArg2[1] << 6)+toNum(lArg3);
 					mach_code &= 0xFFCF; /*Make bits 5 and 4 00*/
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
-				else if(strcmp(lOpcode, "rshfl")){
+				else if(strcmp(lOpcode, "rshfl") == 0){
 					mach_code = (SHF << 12) + (lArg1[1] << 9)+(lArg2[1] << 6)+toNum(lArg3);
 					mach_code &= 0xFFDF;/*Make bits 5 and 4 01*/
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
-				else if(strcmp(lOpcode, "rshfa")){
+				else if(strcmp(lOpcode, "rshfa") == 0){
 					mach_code = (SHF << 12) + (lArg1[1] << 9)+(lArg2[1] << 6)+toNum(lArg3);
 					mach_code &= 0xFFFF;/*Make bits 5 and 4 11*/
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
-				else if(strcmp(lOpcode, "lea")){
-					mach_code = (LEA << 12) + (lArg1[1] << 9) + returnOffset(lArg2, addrCtr);
+				else if(strcmp(lOpcode, "lea") == 0){
+
+					mach_code = (LEA << 12) + (lArg1[1] << 9) + returnOffset(lArg2, addrCtr, 9);
 					mach_code &= 0xF1C0;
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
-				else if(strcmp(lOpcode, "trap")){
+				else if(strcmp(lOpcode, "trap") == 0){
 					mach_code = (TRAP << 12) + toNum(lArg1);
 					mach_code &= 0xF0FF;
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
-				else if(strcmp(lOpcode, "halt")){
+				else if(strcmp(lOpcode, "halt") == 0){
 					mach_code = (TRAP << 12) + 0x25;
 					mach_code &= 0xF0FF;
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
-				else if(strcmp(lOpcode, "nop")){
+				else if(strcmp(lOpcode, "nop") == 0){
 					mach_code = 0x0000;
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
-				else if(strcmp(lOpcode, ".fill")){
+				else if(strcmp(lOpcode, ".fill") == 0){
 					mach_code = toNum(lArg1);
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}

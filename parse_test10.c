@@ -21,7 +21,7 @@
 	};
 
 	enum opcode{
-		BR, ADD, LDB, STB, JSR, AND, LDW, STW, RTI, XOR, JMP, SHF, LEA, TRAP
+		BR, ADD, LDB, STB, JSR, AND, LDW, STW, RTI, XOR, NU, NU2, JMP, SHF, LEA, TRAP
 	};
 
 	typedef struct table{

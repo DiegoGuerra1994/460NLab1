@@ -18,7 +18,7 @@
 
 	typedef struct table{
 		int addr;
-		char* name;
+		char name[20];
 	} sym_table;
 
 	sym_table symbol_table[symbolTableLength]; /*make symbol table array*/
@@ -50,9 +50,8 @@
 	   if( isOpcode( lPtr ) == -1 && lPtr[0] != '.' ){ /* found a label */
 		*pLabel = lPtr;
 		label = 1;
-		/*printf("Found a label\n");*/
+		printf("label found: %s\n", lPtr);
 		if( !( lPtr = strtok( NULL, "\t\n ," )))  return( OK );
-		/*return (LABEL);*/
 	   } /*null pointer may be specified, in which case the function continues scanning 
 	     where a previous successful call to the function ended.*/
 	   
@@ -171,9 +170,11 @@
 int returnOffset(char* symbol, int pointer){
 	int x;
 	for(x=0; x < symbolTableLength; x++){
-			if(strcmp(symbol_table[x].name, symbol) == 0){
-				return pointer - symbol_table[x].addr-1;
-			}
+		/*printf("name: %s	",symbol_table[x].name);
+		printf("addr: %i\n",symbol_table[x].addr); */
+		if(strcmp(symbol_table[x].name, symbol) == 0){
+				return symbol_table[x].addr - pointer - 1;
+		}
 	}
 
 	return -1;
@@ -251,13 +252,13 @@ int main (){
 
 	   char lLine[MAX_LINE_LENGTH + 1], *lLabel, *lOpcode, *lArg1, *lArg2, *lArg3, *lArg4;
 	   int lRet;
-	   int i = 0;
+	   int k = 0;
 	   int ctr = 0;
 	   int addrCtr; /*used in 2nd pass of program*/
 	   int mach_code = 0;
 	   int arg1_num = 0;
-	   int orig; /*start addr of program*/
-	   int offs; /*offset from current addr to label*/
+	   int orig = 0; /*start addr of program*/
+	   int offs = 0; /*offset from current addr to label*/
 	  
 	   FILE * pOutfile;
 	   pOutfile = fopen( "data.out", "w" );
@@ -271,7 +272,7 @@ int main (){
 	   	lRet = readAndParse( lInfile, lLine, &lLabel, &lOpcode, &lArg1, &lArg2, &lArg3, &lArg4 );
 		if (strcmp(lOpcode, ".orig") == 0){
                  	orig = toNum(lArg1);
-			printf("%i\n",orig);
+			printf("start addr: %i\n",orig);
                 }
 
         else if (strcmp(lOpcode, ".end") == 0){
@@ -286,31 +287,40 @@ int main (){
 	   		error(4);
 	   	}
 
-
         /*1st pass: generate symbol table*/
-	   /* lInfile = fopen("data.in", "r");*/     /* open the input file */
 	   rewind(lInfile);	
 	   do{	
 	 	lRet = readAndParse( lInfile, lLine, &lLabel, &lOpcode, &lArg1, &lArg2, &lArg3, &lArg4 );
 		printf("1st pass");
 		printf("	lRet: %i\n", lRet);
 		if (label){
-			symbol_table[i].addr = orig + ctr;
-			printf("address: %i\n", symbol_table[i].addr);	
-			symbol_table[i].name = lLabel;
-			printf("label: %s\n", symbol_table[i].name);
+			int i = 0;
+			while (lLabel[i] != 0){
+				if (!isalnum(lLabel[i])){
+					exit(4);
+				} 
+				i++;
+			}
+			symbol_table[k].addr = orig + ctr;
+			strcpy(symbol_table[k].name, lLabel);
+			printf("label (T/F): %i 1st pass address: %i	label: %s\n", label, symbol_table[k].addr, symbol_table[k].name);
 			label = 0;
-			i++; 
+			k++; 
 		}
  		ctr++;
 	   } while( lRet != DONE );
+	int x;
+	for(x=0; x < 50; x++){
+                printf("name: %s	addr: %i\n",symbol_table[x].name,symbol_table[x].addr);
+                              
+        }
 
-	    /*writeText(mach_code);2nd pass: generate machine code*/
-	   /*lInfile = fopen("data.in", "r");*/     /* open the input file */
+	   /*writeText(mach_code);2nd pass: generate machine code*/
+       addrCtr = orig;
 	   rewind(lInfile);
 	   do
 	   {	
-	   	addrCtr = orig;
+	   	
 	   	lRet = readAndParse( lInfile, lLine, &lLabel, &lOpcode, &lArg1, &lArg2, &lArg3, &lArg4 );
 		printf("label:%s", lLabel);
 		printf(" opcode:%s", lOpcode);
@@ -323,11 +333,13 @@ int main (){
 					fprintf( pOutfile, "0x%.4X\n", orig);
 				}
 
-				if (strcmp(lOpcode, "br") || strcmp(lOpcode, "brnzp") == 0){
+				else if (strcmp(lOpcode, "br") == 0 || strcmp(lOpcode, "brnzp") == 0){
 					/*need condition for n, z, p,*/ 
+					printf("lArg1: %s 	addrCtr: %i\n", lArg1, addrCtr);
 					offs = returnOffset(lArg1, addrCtr);
 					/*check if offset is too big!!!*/
 					mach_code = offs;
+					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 
 				else if (strcmp(lOpcode, "add") == 0){
@@ -383,8 +395,6 @@ int main (){
 				}
 				/*fprintf( pOutfile, "0x%.4X\n", mach_code);*/
 				printf("MACH_CODE!:  %i\n", mach_code);
-
-
 				addrCtr++;
 
 		}

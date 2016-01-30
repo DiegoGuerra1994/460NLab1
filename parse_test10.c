@@ -378,7 +378,7 @@ int main (){
 					/*printf("lArg1: %s 	addrCtr: %i\n", lArg1, addrCtr); */
 					
 					/*check if offset is too big!!!*/
-					mach_code += (returnOffset(lArg1, addrCtr, OFFSET9) & MASK_OFFS11); 
+					mach_code += (returnOffset(lArg1, addrCtr, OFFSET9) & MASK_OFFS9); 
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 

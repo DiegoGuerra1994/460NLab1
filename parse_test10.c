@@ -421,19 +421,16 @@ int main (){
 
 				}
 
-				else if (strcmp(lOpcode, "jsr") == 0 || strcmp(lOpcode, "jsrr") == 0){
-						
-						if (strcmp(lOpcode, "jsr") == 0)
-						{
-							mach_code = (JSR << 12) + 1<<11;
-						}
-						else 
-						{
-							mach_code = (JSR << 12) + ((lArg1[1] - 0x30) << 5);
-						}
-						fprintf( pOutfile, "0x%.4X\n", mach_code);
-						 
+				else if (strcmp(lOpcode, "jsr") == 0) {
+					mach_code = (JSR << 12) + 1<<11 + (returnOffset(lArg1, addrCtr, OFFSET11) & MASK_OFFS11);
+					fprintf( pOutfile, "0x%.4X\n", mach_code);		 
 				}
+
+				else if (strcmp(lOpcode, "jsrr") == 0){
+					mach_code = (JSR << 12) + ((lArg1[1] - 0x30) << 5);
+					fprintf( pOutfile, "0x%.4X\n", mach_code);		
+				}
+
 
 				else if (strcmp(lOpcode, "and")){
 					mach_code = (AND << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
@@ -506,7 +503,7 @@ int main (){
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "lea")){
-					mach_code = (LEA << 12) + (lArg1[1] << 9) + returnOffset(lArg2, addrCtr);
+					mach_code = (LEA << 12) + (lArg1[1] << 9) + returnOffset(lArg2, addrCtr, OFFSET9);
 					mach_code &= 0xF1C0;
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}

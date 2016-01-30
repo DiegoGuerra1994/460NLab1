@@ -504,9 +504,9 @@ int main (){
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "lea") == 0){
-
-					mach_code = (LEA << 12) + (lArg1[1] << 9) + (returnOffset(lArg2, addrCtr, OFFSET9) & MASK_OFFS9);
-					/*mach_code &= 0xF1C0;*/
+					/*mach_code = (LEA << 12) + (lArg1[1] << 9) + (returnOffset(lArg2, addrCtr, OFFSET9) & MASK_OFFS9);*/
+					mach_code = (LEA << 12) + (lArg1[1] << 9);
+					mach_code &= 0xFE00;
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "trap") == 0){

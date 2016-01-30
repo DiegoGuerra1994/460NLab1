@@ -12,6 +12,10 @@
 	#define OFFSET11			11
 	#define MASK_OFFS9 			0x000001FF
 	#define MASK_OFFS11 		0x000007FF
+	#define MASK_NBIT			0x0800
+	#define MASK_ZBIT			0x0400
+	#define MASK_PBIT			0x0200
+
 	enum{
 	   DONE, OK, EMPTY_LINE, LABEL
 	};
@@ -346,12 +350,34 @@ int main (){
 					fprintf( pOutfile, "0x%.4X\n", orig);
 				}
 
-				else if (strcmp(lOpcode, "br") == 0 || strcmp(lOpcode, "brnzp") == 0){
-					/*need condition for n, z, p,*/ 
-					printf("lArg1: %s 	addrCtr: %i\n", lArg1, addrCtr);
-					offs = returnOffset(lArg1, addrCtr, OFFSET9) & MASK_OFFS11; 
+				else if (lOpcode[0] == 'b' && lOpcode[1] == 'r'){
+					/*set n, z, p bits based on br suffix*/
+					if(strcmp(lOpcode, "br") == 0 || strcmp(lOpcode, "brnzp") == 0){
+						/*no n, z, p bits to set */
+						mach_code = 0;
+					}
+					else if(strcmp(lOpcode, "brn") == 0){
+						mach_code |= MASK_NBIT;
+					}
+					else if(strcmp(lOpcode, "brz") == 0){
+						mach_code |= MASK_ZBIT;
+					}
+					else if(strcmp(lOpcode, "brp") == 0){
+						mach_code |= MASK_PBIT;
+					}
+					else if(strcmp(lOpcode, "brnz") == 0){
+						mach_code |= (MASK_NBIT + MASK_ZBIT);
+					}
+					else if(strcmp(lOpcode, "brnp") == 0){
+						mach_code |= (MASK_NBIT + MASK_PBIT);
+					}
+					else { 
+						mach_code |= (MASK_ZBIT + MASK_PBIT); /*BRzp*/
+					}
+					/*printf("lArg1: %s 	addrCtr: %i\n", lArg1, addrCtr); */
+					
 					/*check if offset is too big!!!*/
-					mach_code = offs;
+					mach_code += returnOffset(lArg1, addrCtr, OFFSET9) & MASK_OFFS11; 
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 

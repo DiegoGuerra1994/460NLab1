@@ -17,7 +17,7 @@
 	#define MASK_PBIT			0x0200
 
 	enum{
-	   DONE, OK, EMPTY_LINE, LABEL
+	   DONE, OK, EMPTY_LINE
 	};
 
 	enum opcode{
@@ -175,6 +175,9 @@
 
 	}
 
+/*offsBIts is the number of bits allocated for the offset
+  pointer is the current address of the parser
+  symbol is the name of the label*/
 
 int returnOffset(char* symbol, int pointer, int offsBits){
 	int x;
@@ -182,7 +185,7 @@ int returnOffset(char* symbol, int pointer, int offsBits){
 		/*printf("name: %s	",symbol_table[x].name);
 		printf("addr: %i\n",symbol_table[x].addr); */
 		if(strcmp(symbol_table[x].name, symbol) == 0){
-				int offset =  symbol_table[x].addr - pointer - 1;
+				int offset =  symbol_table[x].addr - (pointer + 1);
 				/*printf ("2 to power of 11 = %i   ",  1 << 11); */
 				 /*check if offset is within max offset value*/
 				if (offset > (1 << offsBits)){ 
@@ -311,25 +314,28 @@ int main (){
 		printf("1st pass");
 		printf("	lRet: %i\n", lRet);
 		/*This if checks to see if the label is a valid label before putting it into the symbol table*/
-		if (label){
-			int i = 0;
-			while (lLabel[i] != 0){
-				if (!isalnum(lLabel[i]) || strcmp(lLabel, "in") == 0 || strcmp(lLabel, "out") == 0 || strcmp(lLabel, "getc") == 0 || strcmp(lLabel, "puts") == 0){
-					exit(4);
-				} 
-				i++;
+			if (label){
+				int i = 0;
+				while (lLabel[i] != 0){
+					if (!isalnum(lLabel[i]) || strcmp(lLabel, "in") == 0 || strcmp(lLabel, "out") == 0 || strcmp(lLabel, "getc") == 0 || strcmp(lLabel, "puts") == 0){
+						exit(4);
+					} 
+					i++;
+				}
+				symbol_table[k].addr = orig + ctr;
+				strcpy(symbol_table[k].name, lLabel);
+				printf("label (T/F): %i 1st pass address: %i	label: %s\n", label, symbol_table[k].addr, symbol_table[k].name);
+				label = 0;
+				k++; 
 			}
-			symbol_table[k].addr = orig + ctr;
-			strcpy(symbol_table[k].name, lLabel);
-			printf("label (T/F): %i 1st pass address: %i	label: %s\n", label, symbol_table[k].addr, symbol_table[k].name);
-			label = 0;
-			k++; 
-		}
- 		ctr++;
-	   } while( lRet != DONE );
+			if (lRet != EMPTY_LINE){
+				ctr++;
+			}
+	    }while( lRet != DONE );
+	
 	int x;
 	for(x=0; x < 50; x++){
-                printf("name: %s	addr: %i\n",symbol_table[x].name,symbol_table[x].addr);
+                printf("name: %s	addr: 0x%.4X\n",symbol_table[x].name,symbol_table[x].addr);
                               
         }
 
@@ -375,10 +381,10 @@ int main (){
 					else { 
 						mach_code |= (MASK_ZBIT + MASK_PBIT); /*BRzp*/
 					}
-					/*printf("lArg1: %s 	addrCtr: %i\n", lArg1, addrCtr); */
-					
+			
 					/*check if offset is too big!!!*/
 					mach_code += (returnOffset(lArg1, addrCtr, OFFSET9) & MASK_OFFS9); 
+					printf("addrCtr: 0x%.4X 	mach Code: 0x%.4X\n",addrCtr, mach_code);
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 

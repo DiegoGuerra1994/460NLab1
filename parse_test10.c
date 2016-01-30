@@ -393,8 +393,9 @@ int main (){
 					mach_code &= 0xFFC0; /*clearing the last 6 bits*/
 					/*see if the number being added is a constant number*/
 					if( (lArg3[0] == 'x') || (lArg3[0] == '#')){
-						mach_code |= 0x10; /*Changing the 5th bit to 1 since we are adding a constant*/
-						mach_code += toNum(lArg3);
+						mach_code |= 0x20; /*Changing the 5th bit to 1 since we are adding a constant*/
+						printf("This should be x-10   %i", toNum(lArg3));
+						mach_code |= (toNum(lArg3) & 0x0000001F);
 					}
 					/*Argument 3 is a register*/
 					else{
@@ -481,12 +482,12 @@ int main (){
 					}
 					/*Argument 3 is a register*/
 					else{
-						mach_code += (lArg3[1] - 0x30);
+						mach_code += ((lArg1[1] - 0x30) - 0x30);
 					}
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "jmp") == 0){
-					mach_code = (JMP << 12) + (lArg1[1] << 6);
+					mach_code = (JMP << 12) + ((lArg1[1] - 0x30) << 6);
 					mach_code &= 0xF1C0;
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
@@ -495,24 +496,23 @@ int main (){
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "lshf") == 0){
-					mach_code = (SHF << 12) + (lArg1[1] << 9)+(lArg2[1] << 6)+toNum(lArg3);
+					mach_code = (SHF << 12) + ((lArg1[1] - 0x30) << 9)+((lArg1[1] - 0x30) << 6)+toNum(lArg3);
 					mach_code &= 0xFFCF; /*Make bits 5 and 4 00*/
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "rshfl") == 0){
-					mach_code = (SHF << 12) + (lArg1[1] << 9)+(lArg2[1] << 6)+toNum(lArg3);
-					mach_code &= 0xFFDF;/*Make bits 5 and 4 01*/
+					mach_code = (SHF << 12) + ((lArg1[1] - 0x30) << 9)+((lArg1[1] - 0x30) << 6)+toNum(lArg3);
+					mach_code &= 0x0020;/*Make bits 5 0*/
+					mach_code |= 0x0010;/*Make bit 4 1*/
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "rshfa") == 0){
-					mach_code = (SHF << 12) + (lArg1[1] << 9)+(lArg2[1] << 6)+toNum(lArg3);
-					mach_code &= 0xFFFF;/*Make bits 5 and 4 11*/
+					mach_code = (SHF << 12) + ((lArg1[1] - 0x30) << 9)+((lArg1[1] - 0x30) << 6)+toNum(lArg3);
+					mach_code |= 0x0030;/*Make bits 5 and 4 11*/
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "lea") == 0){
-					/*mach_code = (LEA << 12) + (lArg1[1] << 9) + (returnOffset(lArg2, addrCtr, OFFSET9) & MASK_OFFS9);*/
-					mach_code = (LEA << 12) + (lArg1[1] << 9);
-					mach_code &= 0xFE00;
+					mach_code = (LEA << 12)+ ((lArg1[1] - 0x30) << 9) + (returnOffset(lArg2, addrCtr, OFFSET9) & MASK_OFFS9);
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "trap") == 0){

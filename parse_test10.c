@@ -23,7 +23,7 @@
 
 	sym_table symbol_table[symbolTableLength]; /*make symbol table array*/
 
-	int label = 0; /*true if parser found label*/
+	static int label = 0; /*true if parser found label*/
 
 	int readAndParse( FILE * pInfile, char * pLine, char ** pLabel, char ** pOpcode, char ** pArg1, char ** pArg2, char ** pArg3, char ** pArg4)
 	{
@@ -293,10 +293,11 @@ int main (){
 	 	lRet = readAndParse( lInfile, lLine, &lLabel, &lOpcode, &lArg1, &lArg2, &lArg3, &lArg4 );
 		printf("1st pass");
 		printf("	lRet: %i\n", lRet);
+		/*This if checks to see if the label is a valid label before putting it into the symbol table*/
 		if (label){
 			int i = 0;
 			while (lLabel[i] != 0){
-				if (!isalnum(lLabel[i])){
+				if (!isalnum(lLabel[i]) || strcmp(lLabel, "in") == 0 || strcmp(lLabel, "out") == 0 || strcmp(lLabel, "getc") == 0 || strcmp(lLabel, "puts") == 0){
 					exit(4);
 				} 
 				i++;
@@ -391,8 +392,104 @@ int main (){
 						{
 							mach_code = (JSR << 12) + ((lArg1[1] - 0x30) << 5);
 						}
+						fprintf( pOutfile, "0x%.4X\n", mach_code);
 						 
 				}
+
+				else if (strcmp(lOpcode, "and")){
+					mach_code = (AND << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
+					mach_code &= 0xFFC0; /*clearing the last 6 bits*/
+					/*see if the number being added is a constant number*/
+					if( (lArg3[0] == 'x') || (lArg3[0] == '#')){
+						mach_code |= 0x10; /*Changing the 5th bit to 1 since we are adding a constant*/
+						mach_code += toNum(lArg3);
+					}
+					/*Argument 3 is a register*/
+					else{
+						mach_code += (lArg3[1] - 0x30);
+					}
+					fprintf( pOutfile, "0x%.4X\n", mach_code);
+				}
+
+				else if (strcmp(lOpcode, "ldw")){
+					mach_code = (LDW << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
+					mach_code &= 0xFFC0;
+					mach_code += toNum(lArg3);
+					fprintf( pOutfile, "0x%.4X\n", mach_code);
+				}
+				else if(strcmp(lOpcode, "stw")){
+					mach_code = (STW << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
+					mach_code &= 0xFFC0;
+					mach_code += toNum(lArg3);
+					fprintf( pOutfile, "0x%.4X\n", mach_code);
+				}
+				else if(strcmp(lOpcode, "rti")){
+					mach_code = (RTI << 12);
+					mach_code &= 0xF000;
+					fprintf( pOutfile, "0x%.4X\n", mach_code);
+				}
+				else if(strcmp(lOpcode, "xor")){
+					mach_code = (XOR << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
+					mach_code &= 0xFFC0; /*clearing the last 6 bits*/
+					/*see if the number being added is a constant number*/
+					if( (lArg3[0] == 'x') || (lArg3[0] == '#')){
+						mach_code |= 0x10; /*Changing the 5th bit to 1 since we are adding a constant*/
+						mach_code += toNum(lArg3);
+					}
+					/*Argument 3 is a register*/
+					else{
+						mach_code += (lArg3[1] - 0x30);
+					}
+					fprintf( pOutfile, "0x%.4X\n", mach_code);
+				}
+				else if(strcmp(lOpcode, "jmp")){
+					mach_code = (JMP << 12) + (lArg1[1] << 6);
+					mach_code &= 0xF1C0;
+					fprintf( pOutfile, "0x%.4X\n", mach_code);
+				}
+				else if(strcmp(lOpcode, "ret")){
+					mach_code = (JMP << 12) + 0x01C0;
+					fprintf( pOutfile, "0x%.4X\n", mach_code);
+				}
+				else if(strcmp(lOpcode, "lshf")){
+					mach_code = (SHF << 12) + (lArg1[1] << 9)+(lArg2[1] << 6)+toNum(lArg3);
+					mach_code &= 0xFFCF; /*Make bits 5 and 4 00*/
+					fprintf( pOutfile, "0x%.4X\n", mach_code);
+				}
+				else if(strcmp(lOpcode, "rshfl")){
+					mach_code = (SHF << 12) + (lArg1[1] << 9)+(lArg2[1] << 6)+toNum(lArg3);
+					mach_code &= 0xFFDF;/*Make bits 5 and 4 01*/
+					fprintf( pOutfile, "0x%.4X\n", mach_code);
+				}
+				else if(strcmp(lOpcode, "rshfa")){
+					mach_code = (SHF << 12) + (lArg1[1] << 9)+(lArg2[1] << 6)+toNum(lArg3);
+					mach_code &= 0xFFFF;/*Make bits 5 and 4 11*/
+					fprintf( pOutfile, "0x%.4X\n", mach_code);
+				}
+				else if(strcmp(lOpcode, "lea")){
+					mach_code = (LEA << 12) + (lArg1[1] << 9) + returnOffset(lArg2, addrCtr);
+					mach_code &= 0xF1C0;
+					fprintf( pOutfile, "0x%.4X\n", mach_code);
+				}
+				else if(strcmp(lOpcode, "trap")){
+					mach_code = (TRAP << 12) + toNum(lArg1);
+					mach_code &= 0xF0FF;
+					fprintf( pOutfile, "0x%.4X\n", mach_code);
+				}
+				else if(strcmp(lOpcode, "halt")){
+					mach_code = (TRAP << 12) + 0x25;
+					mach_code &= 0xF0FF;
+					fprintf( pOutfile, "0x%.4X\n", mach_code);
+				}
+				else if(strcmp(lOpcode, "nop")){
+					mach_code = 0x0000;
+					fprintf( pOutfile, "0x%.4X\n", mach_code);
+				}
+				else if(strcmp(lOpcode, ".fill")){
+					mach_code = toNum(lArg1);
+					fprintf( pOutfile, "0x%.4X\n", mach_code);
+				}
+
 				/*fprintf( pOutfile, "0x%.4X\n", mach_code);*/
 				printf("MACH_CODE!:  %i\n", mach_code);
 				addrCtr++;

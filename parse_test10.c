@@ -3,11 +3,15 @@
 	#include <string.h>	/* String operations library */
 	#include <ctype.h>	/* Library for useful character operations */
 	#include <limits.h>	/* Library for definitions of common variable type characteristics */
-	
+
 	/*char* lPtr;*/
 
-	#define MAX_LINE_LENGTH 255
-	#define symbolTableLength 500
+	#define MAX_LINE_LENGTH 	255
+	#define symbolTableLength 	500
+	#define OFFSET9				9
+	#define OFFSET11			11
+	#define MASK_OFFS9 			0x000001FF
+	#define MASK_OFFS11 		0x000007FF
 	enum{
 	   DONE, OK, EMPTY_LINE, LABEL
 	};
@@ -23,10 +27,11 @@
 
 	sym_table symbol_table[symbolTableLength]; /*make symbol table array*/
 
-	int label = 0; /*true if parser found label*/
+	int label; /*true if parser found label*/
 
 	int readAndParse( FILE * pInfile, char * pLine, char ** pLabel, char ** pOpcode, char ** pArg1, char ** pArg2, char ** pArg3, char ** pArg4)
-	{
+	{	
+	   label = 0;
 	   char * lRet ,*lPtr;
 	   int i;
 	   if( !fgets( pLine, MAX_LINE_LENGTH, pInfile ) )
@@ -167,13 +172,21 @@
 	}
 
 
-int returnOffset(char* symbol, int pointer){
+int returnOffset(char* symbol, int pointer, int offsBits){
 	int x;
 	for(x=0; x < symbolTableLength; x++){
 		/*printf("name: %s	",symbol_table[x].name);
 		printf("addr: %i\n",symbol_table[x].addr); */
 		if(strcmp(symbol_table[x].name, symbol) == 0){
-				return symbol_table[x].addr - pointer - 1;
+				int offset =  symbol_table[x].addr - pointer - 1;
+				/*printf ("2 to power of 11 = %i   ",  1 << 11); */
+				 /*check if offset is within max offset value*/
+				if (offset > (1 << offsBits)){ 
+					exit (4);
+				}
+				else{
+					return offset;
+				}
 		}
 	}
 
@@ -336,7 +349,7 @@ int main (){
 				else if (strcmp(lOpcode, "br") == 0 || strcmp(lOpcode, "brnzp") == 0){
 					/*need condition for n, z, p,*/ 
 					printf("lArg1: %s 	addrCtr: %i\n", lArg1, addrCtr);
-					offs = returnOffset(lArg1, addrCtr);
+					offs = returnOffset(lArg1, addrCtr, OFFSET9) & MASK_OFFS11; 
 					/*check if offset is too big!!!*/
 					mach_code = offs;
 					fprintf( pOutfile, "0x%.4X\n", mach_code);

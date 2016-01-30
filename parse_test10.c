@@ -355,7 +355,7 @@ int main (){
 					/*set n, z, p bits based on br suffix*/
 					if(strcmp(lOpcode, "br") == 0 || strcmp(lOpcode, "brnzp") == 0){
 						/*no n, z, p bits to set */
-						mach_code = 0;
+						mach_code |= (MASK_NBIT + MASK_ZBIT + MASK_PBIT);
 					}
 					else if(strcmp(lOpcode, "brn") == 0){
 						mach_code |= MASK_NBIT;
@@ -378,7 +378,7 @@ int main (){
 					/*printf("lArg1: %s 	addrCtr: %i\n", lArg1, addrCtr); */
 					
 					/*check if offset is too big!!!*/
-					mach_code += returnOffset(lArg1, addrCtr, OFFSET9) & MASK_OFFS11; 
+					mach_code += (returnOffset(lArg1, addrCtr, OFFSET9) & MASK_OFFS11); 
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 

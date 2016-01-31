@@ -268,6 +268,45 @@ int toNum( char * pStr ){
    }
 }
 
+/*
+numRegs is number of arguments that are registers 
+numArgs is number of arguments after opcode */
+
+void errorcheck4(char* arg1, char* arg2, char* arg3, int numRegs, int numArgs){
+	int numbArgs = 0;
+	int x=0;
+	/*count number of operands, exit if incorrect */
+	if (arg1[0] != '\0'){
+		numbArgs++;
+	}
+	if (arg2[0] != '\0'){
+		numbArgs++;
+	}
+	if (arg3[0] != '\0'){
+		numbArgs++;
+	}
+	printf("number of arguments: %i\n", numbArgs);
+	if (numbArgs != numArgs){
+		exit(4);
+	}
+
+	/*check if registers are are r0 to r7*/
+	/*also check if given the correct number of registers*/	
+	if(!(strcmp(arg1, "r0") == 0 || strcmp(arg1, "r1") == 0  || strcmp(arg1, "r2") == 0  || strcmp(arg1, "r3") == 0  
+		|| strcmp(arg1, "r4") == 0  || strcmp(arg1, "r5") == 0   || strcmp(arg1, "r6") == 0  || strcmp(arg1, "r7") == 0) && x <  numRegs){
+		exit(4);
+	}
+	x++;
+	if(!(strcmp(arg2, "r0") == 0 || strcmp(arg2, "r1") == 0  || strcmp(arg2, "r2") == 0  || strcmp(arg2, "r3") == 0  
+		|| strcmp(arg2, "r4") == 0  || strcmp(arg2, "r5") == 0   || strcmp(arg2, "r6") == 0  || strcmp(arg2, "r7") == 0) && x <  numRegs){
+		exit(4);
+	}
+	x++;
+	if(!(strcmp(arg3, "r0") == 0 || strcmp(arg3, "r1") == 0  || strcmp(arg3, "r2") == 0  || strcmp(arg3, "r3") == 0 
+	   || strcmp(arg3, "r4") == 0  || strcmp(arg3, "r5") == 0   || strcmp(arg3, "r6") == 0  || strcmp(arg3, "r7") == 0) && x < numRegs){
+		exit(4);
+	}
+}
 	/* Note: MAX_LINE_LENGTH, OK, EMPTY_LINE, and DONE are defined values */
 int main (int argc, char* argv[]){
 
@@ -281,10 +320,10 @@ int main (int argc, char* argv[]){
 	   int orig = 0; 		/*start addr of program*/
 	   int offs = 0; 		/*offset from current addr to label*/
 	   int endDefined = 0;  /*true if input file has .END */
+	   int numArgs = 0;
 
 	   FILE * pOutfile;
 	   pOutfile = fopen(argv[2], "w" );
-
 
 	   FILE * lInfile;
 	   lInfile = fopen(argv[1], "r");	/* open the input file */
@@ -361,6 +400,7 @@ int main (int argc, char* argv[]){
 	   rewind(lInfile);
 	   do
 	   {	
+	   	numArgs = 0;
 	   	mach_code = 0;
 	   	lRet = readAndParse( lInfile, lLine, &lLabel, &lOpcode, &lArg1, &lArg2, &lArg3, &lArg4 );
 		printf("label:%s", lLabel);
@@ -369,16 +409,6 @@ int main (int argc, char* argv[]){
 		printf(" arg2:%s ", lArg2);
 		printf(" arg3:%s\n", lArg3);
 		if( lRet != DONE && lRet != EMPTY_LINE ){
-				 /*check if register values are between 0 and 7*/
-				if (!(lArg1[0] == 'r' && (lArg1[1] - 0x30) >= 0 && (lArg1[1] - 0x30) <= 7)){
-					exit(4);
-				}
-				if (!(lArg2[0] == 'r' && (lArg2[1] - 0x30) >= 0 && (lArg2[1] - 0x30) <= 7)){
-					exit(4);
-				}
-				if (!(lArg3[0] == 'r' && (lArg3[1] - 0x30) >= 0 && (lArg3[1] - 0x30) <= 7)){
-					exit(4);
-				}
 
 				 /*generate machine code (hex) given the parsed opcodes*/
 				if (strcmp(lOpcode, ".orig") == 0){
@@ -387,6 +417,7 @@ int main (int argc, char* argv[]){
 
 				else if (lOpcode[0] == 'b' && lOpcode[1] == 'r'){
 					/*BRnzp can only have labels*/
+					errorcheck4(lArg1, lArg2, lArg3, 1, 0);
 					if(lArg2[0] == 'x' || lArg2[0] == '#'){
 						exit(4);
 					}
@@ -424,7 +455,7 @@ int main (int argc, char* argv[]){
 					mach_code &= 0xFFC0; /*clearing the last 6 bits*/
 					/*see if the number being added is a constant number*/
 					if( (lArg3[0] == 'x') || (lArg3[0] == '#')){
-
+						errorcheck4(lArg1, lArg2, lArg3, 2, 3);
 						/*Error condition to see if number being added is in range*/
 						int imm5 = toNum(lArg3);
 						if(imm5 > 15 || imm5 < -16){
@@ -435,6 +466,7 @@ int main (int argc, char* argv[]){
 					}
 					/*Argument 3 is a register*/
 					else{
+						errorcheck4(lArg1, lArg2, lArg3, 3, 3);
 						mach_code += (lArg3[1] - 0x30);
 					}
 					fprintf( pOutfile, "0x%.4X\n", mach_code);

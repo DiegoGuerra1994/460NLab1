@@ -389,7 +389,18 @@ int main (){
 					}
 			
 					/*check if offset is too big!!!*/
-					mach_code += (returnOffset(lArg1, addrCtr, OFFSET9) & MASK_OFFS9); 
+					int PCoffset9 = 0;
+					if(lArg1[0] == "x" || lArg1[0]=="#"){
+						PCoffset9 = toNum(lArg1);
+						if(PCoffset9 > 255 || PCoffset9 < -256){
+							exit(4);
+						}
+
+					}
+					else{
+						PCoffset9 = (returnOffset(lArg1, addrCtr, OFFSET9) & MASK_OFFS9);
+					}
+					mach_code |= (PCoffset9 & 0x01FF);
 					printf("addrCtr: 0x%.4X 	mach Code: 0x%.4X\n",addrCtr, mach_code);
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
@@ -438,7 +449,20 @@ int main (){
 				}
 
 				else if (strcmp(lOpcode, "jsr") == 0) {
-					mach_code = (JSR << 12) + 1<<11 + (returnOffset(lArg1, addrCtr, OFFSET11) & MASK_OFFS11);
+					int PCoffset9 = 0;
+					if(lArg1[0] == "x" || lArg1[0]=="#"){
+						PCoffset9 = toNum(lArg1);
+						if(PCoffset9 > 255 || PCoffset9 < -256){
+							exit(4);
+						}
+
+					}
+					else{
+						PCoffset9 = (returnOffset(lArg1, addrCtr, OFFSET11) & MASK_OFFS11);
+					}
+
+					mach_code = (JSR << 12) + 1<<11;
+					mach_code |= (PCoffset9 & 0x01FF);
 					fprintf( pOutfile, "0x%.4X\n", mach_code);		 
 				}
 
@@ -521,7 +545,21 @@ int main (){
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "lea") == 0){
-					mach_code = (LEA << 12)+ ((lArg1[1] - 0x30) << 9) + (returnOffset(lArg2, addrCtr, OFFSET9) & MASK_OFFS9);
+					int PCoffset9 = 0;
+					if(lArg2[0] == "x" || lArg2[0]=="#"){
+						PCoffset9 = toNum(lArg2);
+						if(PCoffset9 > 255 || PCoffset9 < -256){
+							exit(4);
+						}
+
+					}
+					else{
+						PCoffset9 = (returnOffset(lArg2, addrCtr, OFFSET9) & MASK_OFFS9);
+					}
+
+					mach_code = (LEA << 12)+ ((lArg1[1] - 0x30) << 9)
+					mach_code |= (PCoffset9 & 0x01FF);
+
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "trap") == 0){

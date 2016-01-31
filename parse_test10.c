@@ -292,6 +292,12 @@ int main (){
 	   	lRet = readAndParse( lInfile, lLine, &lLabel, &lOpcode, &lArg1, &lArg2, &lArg3, &lArg4 );
 		if (strcmp(lOpcode, ".orig") == 0){
                  	orig = toNum(lArg1);
+
+                 	/*Error condition to see if the starting address is odd*/
+                 	if(orig%2!=0){
+                 		exit(3);
+                 	}
+
 			printf("start addr: %i\n",orig);
                 }
 

@@ -399,8 +399,11 @@ int main (){
 					mach_code &= 0xFFC0; /*clearing the last 6 bits*/
 					/*see if the number being added is a constant number*/
 					if( (lArg3[0] == 'x') || (lArg3[0] == '#')){
+						int imm5 = toNum(lArg3);
+						if(imm5 > 15 || imm5 < -16){
+							exit(3);
+						}
 						mach_code |= 0x20; /*Changing the 5th bit to 1 since we are adding a constant*/
-						printf("This should be x-10   %i", toNum(lArg3));
 						mach_code |= (toNum(lArg3) & 0x0000001F);
 					}
 					/*Argument 3 is a register*/
@@ -536,6 +539,9 @@ int main (){
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, ".fill") == 0){
+					if(lArg1[0] == '\0'){
+						exit(4);
+					}
 					mach_code = toNum(lArg1);
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}

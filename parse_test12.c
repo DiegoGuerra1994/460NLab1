@@ -196,6 +196,8 @@ int returnOffset(char* symbol, int pointer, int offsBits){
 				}
 		}
 	}
+	/*If symbol doesn't exist. throw error*/
+	exit(1);
 
 	return -1;
 
@@ -292,6 +294,11 @@ int main (int argc, char* argv[]){
 	   	lRet = readAndParse( lInfile, lLine, &lLabel, &lOpcode, &lArg1, &lArg2, &lArg3, &lArg4 );
 		if (strcmp(lOpcode, ".orig") == 0){
                  	orig = toNum(lArg1);
+			/*Error condition to see if the starting address is odd*/
+                 	if(orig%2!=0){
+                 		exit(3);
+                 	}
+
 			printf("start addr: %i\n",orig);
                 }
 
@@ -317,11 +324,26 @@ int main (int argc, char* argv[]){
 			if (label){
 				int i = 0;
 				while (lLabel[i] != 0){
-					if (!isalnum(lLabel[i]) || strcmp(lLabel, "in") == 0 || strcmp(lLabel, "out") == 0 || strcmp(lLabel, "getc") == 0 || strcmp(lLabel, "puts") == 0){
+					/*Checks to see if it is no alphanumberic, not IN, not OUT, not GETC, not PUTS, doesnt start with x and doesnt start with a number*/
+					if (!isalnum(lLabel[i]) || strcmp(lLabel, "in") == 0 || strcmp(lLabel, "out") == 0 || strcmp(lLabel, "getc") == 0 || strcmp(lLabel, "puts") == 0 || lLabel[0] == 'x'|| isdigit(lLabel[0]) == 1){
 						exit(4);
 					} 
+					/*Label cannot be the same name as a register*/
+					else if(strcmp(lLabel, "r0") == 0 || strcmp(lLabel, "r1") == 0 || strcmp(lLabel, "r2") == 0 || strcmp(lLabel, "r3") == 0 || strcmp(lLabel, "r4") == 0 || strcmp(lLabel, "r5") == 0 || strcmp(lLabel, "r6") == 0 || strcmp(lLabel, "r7") == 0){
+
+					}
 					i++;
 				}
+
+				int x =0;
+				/*If symbol already exists in the symbol table, throw error*/
+				do{
+					if(strcmp(lLabel, symbol_table[x].name) == 0){
+						exit(4);
+					}
+					x++;
+				}while(x<k);
+
 				symbol_table[k].addr = orig + ctr;
 				strcpy(symbol_table[k].name, lLabel);
 				printf("label (T/F): %i 1st pass address: %i	label: %s\n", label, symbol_table[k].addr, symbol_table[k].name);
@@ -393,9 +415,14 @@ int main (int argc, char* argv[]){
 					mach_code &= 0xFFC0; /*clearing the last 6 bits*/
 					/*see if the number being added is a constant number*/
 					if( (lArg3[0] == 'x') || (lArg3[0] == '#')){
+
+						/*Error condition to see if number being added is in range*/
+						int imm5 = toNum(lArg3);
+						if(imm5 > 15 || imm5 < -16){
+							exit(3);
+						}
 						mach_code |= 0x20; /*Changing the 5th bit to 1 since we are adding a constant*/
-						printf("This should be x-10   %i", toNum(lArg3));
-						mach_code |= (toNum(lArg3) & 0x0000001F);
+						mach_code |= (imm5 & 0x0000001F);
 					}
 					/*Argument 3 is a register*/
 					else{
@@ -411,19 +438,31 @@ int main (int argc, char* argv[]){
 
 					 /* put constant in bits[5:0]*/
 					mach_code &= 0xFFC0;
-					mach_code += toNum(lArg3);
-					printf("mach_code: %i\n", mach_code);
+
+					int boffset6 = toNum(lArg3);
+					if(boffset6 < -32 || boffset6 > 31){
+						exit(3);
+					}
+
+					mach_code |= (boffset6 & 0x0000002F);
+
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 			
 				}				
 				else if (strcmp(lOpcode, "stb") == 0){
-					  /*extract reg number from arguments, then shift to correct place*/
-                                        mach_code = (STB << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
+					/*extract reg number from arguments, then shift to correct place*/
+                    mach_code = (STB << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
 
-                                         /* put constant in bits[5:0]*/
-                                        mach_code &= 0xFFC0;
-                                        mach_code += toNum(lArg3);
-                                        printf("mach_code: %i\n", mach_code);
+                    /* put constant in bits[5:0]*/
+                    mach_code &= 0xFFC0;
+
+                    int boffset6 = toNum(lArg3);
+					if(boffset6 < -32 || boffset6 > 31){
+						exit(3);
+					}
+
+					mach_code |= (boffset6 & 0x0000002F);
+                    
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 
 				}
@@ -444,8 +483,13 @@ int main (int argc, char* argv[]){
 					mach_code &= 0xFFC0; /*clearing the last 6 bits*/
 					/*see if the number being added is a constant number*/
 					if( (lArg3[0] == 'x') || (lArg3[0] == '#')){
-						mach_code |= 0x10; /*Changing the 5th bit to 1 since we are adding a constant*/
-						mach_code += toNum(lArg3);
+						/*Error condition to see if number being anded is in range*/
+						int imm5 = toNum(lArg3);
+						if(imm5 > 15 || imm5 < -16){
+							exit(3);
+						}
+						mach_code |= 0x20; /*Changing the 5th bit to 1 since we are adding a constant*/
+						mach_code |= (imm5 & 0x0000001F);
 					}
 					/*Argument 3 is a register*/
 					else{
@@ -477,8 +521,13 @@ int main (int argc, char* argv[]){
 					mach_code &= 0xFFC0; /*clearing the last 6 bits*/
 					/*see if the number being added is a constant number*/
 					if( (lArg3[0] == 'x') || (lArg3[0] == '#')){
-						mach_code |= 0x10; /*Changing the 5th bit to 1 since we are adding a constant*/
-						mach_code += toNum(lArg3);
+						int imm5 = toNum(lArg3);
+						if(imm5 > 15 || imm5 < -16){
+							exit(3);
+						}
+
+						mach_code |= 0x20; /*Changing the 5th bit to 1 since we are adding a constant*/
+						mach_code |= (imm5 & 0x0000001F);
 					}
 					/*Argument 3 is a register*/
 					else{
@@ -496,18 +545,32 @@ int main (int argc, char* argv[]){
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "lshf") == 0){
-					mach_code = (SHF << 12) + ((lArg1[1] - 0x30) << 9)+((lArg1[1] - 0x30) << 6)+toNum(lArg3);
+					int amount4 = toNum(lArg3);
+					/*Error checking to see the amount being shifted is within range 0 to 15*/
+					if(amount4 < 0 || amount4 > 15){
+						exit(3);
+					}
+					mach_code = (SHF << 12) + ((lArg1[1] - 0x30) << 9)+((lArg1[1] - 0x30) << 6)+ amount4;
 					mach_code &= 0xFFCF; /*Make bits 5 and 4 00*/
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "rshfl") == 0){
-					mach_code = (SHF << 12) + ((lArg1[1] - 0x30) << 9)+((lArg1[1] - 0x30) << 6)+toNum(lArg3);
+					/*Error checking to see the amount being shifted is within range 0 to 15*/
+					int amount4 = toNum(lArg3);
+					if(amount4 < 0 || amount4 > 15){
+						exit(3);
+					}
+					mach_code = (SHF << 12) + ((lArg1[1] - 0x30) << 9)+((lArg1[1] - 0x30) << 6)+ amount4;
 					mach_code &= 0x0020;/*Make bits 5 0*/
 					mach_code |= 0x0010;/*Make bit 4 1*/
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "rshfa") == 0){
-					mach_code = (SHF << 12) + ((lArg1[1] - 0x30) << 9)+((lArg1[1] - 0x30) << 6)+toNum(lArg3);
+					/*Error checking to see the amount being shifted is within range 0 to 15*/
+					int amount4 = toNum(lArg3);
+					if(amount4 < 0 || amount4 > 15){
+						exit(3);
+					}
 					mach_code |= 0x0030;/*Make bits 5 and 4 11*/
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
@@ -516,7 +579,12 @@ int main (int argc, char* argv[]){
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "trap") == 0){
-					mach_code = (TRAP << 12) + toNum(lArg1);
+					int trapVect8 = toNum(lArg1);
+					/*Error checking to see the trap vector is within the range 0 to 255*/
+					if(trapVect8 < 0 || trapVect8 > 255){
+						exit(3);
+					}
+					mach_code = (TRAP << 12) + trapVect8;
 					mach_code &= 0xF0FF;
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
@@ -530,6 +598,13 @@ int main (int argc, char* argv[]){
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, ".fill") == 0){
+
+
+				/*Not sure if this is the error check for missing operand*/
+				if(lArg1[0] == '\0'){
+						exit(4);
+					}
+
 					mach_code = toNum(lArg1);
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}

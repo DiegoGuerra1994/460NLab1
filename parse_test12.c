@@ -417,7 +417,7 @@ int main (int argc, char* argv[]){
 
 				else if (lOpcode[0] == 'b' && lOpcode[1] == 'r'){
 					/*BRnzp can only have labels*/
-					errorcheck4(lArg1, lArg2, lArg3, 1, 0);
+					errorcheck4(lArg1, lArg2, lArg3, 0, 1);
 					if(lArg2[0] == 'x' || lArg2[0] == '#'){
 						exit(4);
 					}
@@ -684,6 +684,9 @@ int main (int argc, char* argv[]){
 
 					mach_code = toNum(lArg1);
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
+				}
+				else{
+					exit(2);
 				}
 
 				/*fprintf( pOutfile, "0x%.4X\n", mach_code);*/

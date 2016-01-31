@@ -380,6 +380,10 @@ int main (int argc, char* argv[]){
 				}
 
 				else if (lOpcode[0] == 'b' && lOpcode[1] == 'r'){
+					/*BRnzp can only have labels*/
+					if(lArg2[0] == 'x' || lArg2[0] == '#'){
+						exit(4);
+					}
 					/*set n, z, p bits based on br suffix*/
 					if(strcmp(lOpcode, "br") == 0 || strcmp(lOpcode, "brnzp") == 0){
 						/*no n, z, p bits to set */
@@ -468,6 +472,11 @@ int main (int argc, char* argv[]){
 				}
 
 				else if (strcmp(lOpcode, "jsr") == 0) {
+					/*JSR can only have labels*/
+					if(lArg2[0] == 'x' || lArg2[0] == '#'){
+						exit(4);
+					}
+
 					mach_code = (JSR << 12) + 1<<11 + (returnOffset(lArg1, addrCtr, OFFSET11) & MASK_OFFS11);
 					fprintf( pOutfile, "0x%.4X\n", mach_code);		 
 				}
@@ -499,16 +508,27 @@ int main (int argc, char* argv[]){
 				}
 
 				else if (strcmp(lOpcode, "ldw") == 0){
-					printf("This is ldw %i", LDW);
+					
+
+
 					mach_code = (LDW << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
-					mach_code &= 0xFFC0;
-					mach_code += toNum(lArg3);
+					
+					int offset6 = toNum(lArg3);
+					if(offset6 < -32 || offset6 > 31){
+						exit(3);
+					}
+
+					mach_code |= (offset6 & 0x0000002F);
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "stw") == 0){
+					int offset6 = toNum(lArg3);
+					if(offset6 < -32 || offset6 > 31){
+						exit(3);
+					}
 					mach_code = (STW << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
 					mach_code &= 0xFFC0;
-					mach_code += toNum(lArg3);
+					mach_code |= (offset6 & 0x0000002F);
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "rti") == 0){
@@ -575,6 +595,11 @@ int main (int argc, char* argv[]){
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "lea") == 0){
+
+					/*LEA can only have labels*/
+					if(lArg2[0] == 'x' || lArg2[0] == '#'){
+						exit(4);
+					}
 					mach_code = (LEA << 12)+ ((lArg1[1] - 0x30) << 9) + (returnOffset(lArg2, addrCtr, OFFSET9) & MASK_OFFS9);
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}

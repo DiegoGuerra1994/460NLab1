@@ -474,6 +474,7 @@ int main (int argc, char* argv[]){
 
 
 				else if (strcmp(lOpcode, "ldb") == 0){
+					errorcheck4(lArg1, lArg2, lArg3, 2, 3);
 					 /*extract reg number from arguments, then shift to correct place*/
 					mach_code = (LDB << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6); 
 
@@ -491,6 +492,7 @@ int main (int argc, char* argv[]){
 			
 				}				
 				else if (strcmp(lOpcode, "stb") == 0){
+					errorcheck4(lArg1, lArg2, lArg3, 2, 3);
 					/*extract reg number from arguments, then shift to correct place*/
                     mach_code = (STB << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
 
@@ -509,6 +511,7 @@ int main (int argc, char* argv[]){
 				}
 
 				else if (strcmp(lOpcode, "jsr") == 0) {
+					errorcheck4(lArg1, lArg2, lArg3, 0, 1);
 					/*JSR can only have labels*/
 					if(lArg2[0] == 'x' || lArg2[0] == '#'){
 						exit(4);
@@ -519,6 +522,7 @@ int main (int argc, char* argv[]){
 				}
 
 				else if (strcmp(lOpcode, "jsrr") == 0){
+					errorcheck4(lArg1, lArg2, lArg3, 1, 1);
 					mach_code = (JSR << 12) + ((lArg1[1] - 0x30) << 5);
 					fprintf( pOutfile, "0x%.4X\n", mach_code);		
 				}
@@ -529,6 +533,7 @@ int main (int argc, char* argv[]){
 					mach_code &= 0xFFC0; /*clearing the last 6 bits*/
 					/*see if the number being added is a constant number*/
 					if( (lArg3[0] == 'x') || (lArg3[0] == '#')){
+						errorcheck4(lArg1, lArg2, lArg3, 2, 3);
 						/*Error condition to see if number being anded is in range*/
 						int imm5 = toNum(lArg3);
 						if(imm5 > 15 || imm5 < -16){
@@ -539,13 +544,14 @@ int main (int argc, char* argv[]){
 					}
 					/*Argument 3 is a register*/
 					else{
+						errorcheck4(lArg1, lArg2, lArg3, 3, 3);
 						mach_code += (lArg3[1] - 0x30);
 					}
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 
 				else if (strcmp(lOpcode, "ldw") == 0){
-					
+					errorcheck4(lArg1, lArg2, lArg3, 2, 3);
 
 
 					mach_code = (LDW << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
@@ -559,6 +565,7 @@ int main (int argc, char* argv[]){
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "stw") == 0){
+					errorcheck4(lArg1, lArg2, lArg3, 2, 3);
 					int offset6 = toNum(lArg3);
 					if(offset6 < -32 || offset6 > 31){
 						exit(3);
@@ -569,6 +576,7 @@ int main (int argc, char* argv[]){
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "rti") == 0){
+					errorcheck4(lArg1, lArg2, lArg3, 0, 0);
 					mach_code = (RTI << 12);
 					mach_code &= 0xF000;
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
@@ -578,6 +586,7 @@ int main (int argc, char* argv[]){
 					mach_code &= 0xFFC0; /*clearing the last 6 bits*/
 					/*see if the number being added is a constant number*/
 					if( (lArg3[0] == 'x') || (lArg3[0] == '#')){
+						errorcheck4(lArg1, lArg2, lArg3, 2, 3);
 						int imm5 = toNum(lArg3);
 						if(imm5 > 15 || imm5 < -16){
 							exit(3);
@@ -588,20 +597,24 @@ int main (int argc, char* argv[]){
 					}
 					/*Argument 3 is a register*/
 					else{
+						errorcheck4(lArg1, lArg2, lArg3, 3, 3);
 						mach_code += ((lArg1[1] - 0x30) - 0x30);
 					}
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "jmp") == 0){
+					errorcheck4(lArg1, lArg2, lArg3, 1, 1);
 					mach_code = (JMP << 12) + ((lArg1[1] - 0x30) << 6);
 					mach_code &= 0xF1C0;
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "ret") == 0){
+					errorcheck4(lArg1, lArg2, lArg3, 0, 0);
 					mach_code = (JMP << 12) + 0x01C0;
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "lshf") == 0){
+					errorcheck4(lArg1, lArg2, lArg3, 2, 3);
 					int amount4 = toNum(lArg3);
 					/*Error checking to see the amount being shifted is within range 0 to 15*/
 					if(amount4 < 0 || amount4 > 15){
@@ -612,6 +625,7 @@ int main (int argc, char* argv[]){
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "rshfl") == 0){
+					errorcheck4(lArg1, lArg2, lArg3, 2, 3);
 					/*Error checking to see the amount being shifted is within range 0 to 15*/
 					int amount4 = toNum(lArg3);
 					if(amount4 < 0 || amount4 > 15){
@@ -623,6 +637,7 @@ int main (int argc, char* argv[]){
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "rshfa") == 0){
+					errorcheck4(lArg1, lArg2, lArg3, 2, 3);
 					/*Error checking to see the amount being shifted is within range 0 to 15*/
 					int amount4 = toNum(lArg3);
 					if(amount4 < 0 || amount4 > 15){
@@ -632,7 +647,7 @@ int main (int argc, char* argv[]){
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "lea") == 0){
-
+					errorcheck4(lArg1, lArg2, lArg3, 1, 2);
 					/*LEA can only have labels*/
 					if(lArg2[0] == 'x' || lArg2[0] == '#'){
 						exit(4);
@@ -641,6 +656,7 @@ int main (int argc, char* argv[]){
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "trap") == 0){
+					errorcheck4(lArg1, lArg2, lArg3, 0, 1);
 					int trapVect8 = toNum(lArg1);
 					/*Error checking to see the trap vector is within the range 0 to 255*/
 					if(trapVect8 < 0 || trapVect8 > 255){
@@ -651,21 +667,20 @@ int main (int argc, char* argv[]){
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "halt") == 0){
+					errorcheck4(lArg1, lArg2, lArg3, 0, 0);
 					mach_code = (TRAP << 12) + 0x25;
 					mach_code &= 0xF0FF;
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "nop") == 0){
+					errorcheck4(lArg1, lArg2, lArg3, 0, 0);
 					mach_code = 0x0000;
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, ".fill") == 0){
-
+					errorcheck4(lArg1, lArg2, lArg3, 0, 1);
 
 				/*Not sure if this is the error check for missing operand*/
-				if(lArg1[0] == '\0'){
-						exit(4);
-					}
 
 					mach_code = toNum(lArg1);
 					fprintf( pOutfile, "0x%.4X\n", mach_code);

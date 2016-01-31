@@ -196,7 +196,7 @@ int returnOffset(char* symbol, int pointer, int offsBits){
 				}
 		}
 	}
-
+	exit(1);
 	return -1;
 
 }

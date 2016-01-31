@@ -196,9 +196,8 @@ int returnOffset(char* symbol, int pointer, int offsBits){
 				}
 		}
 	}
-	/*If symbol doesn't exist. throw error*/
+	/*undefined label - If symbol doesn't exist. throw error*/
 	exit(1);
-
 	return -1;
 
 }
@@ -276,51 +275,41 @@ int main (int argc, char* argv[]){
 	   int lRet;
 	   int k = 0;
 	   int ctr = 0;
-	   int addrCtr; /*used in 2nd pass of program*/
+	   int addrCtr; 		/*used in 2nd pass of program*/
 	   int mach_code = 0;
 	   int arg1_num = 0;
-	   int orig = 0; /*start addr of program*/
-	   int offs = 0; /*offset from current addr to label*/
-	  
+	   int orig = 0; 		/*start addr of program*/
+	   int offs = 0; 		/*offset from current addr to label*/
+	   int endDefined = 0;  /*true if input file has .END */
+
 	   FILE * pOutfile;
 	   pOutfile = fopen(argv[2], "w" );
 
-	   int endDefined = 0;
+
 	   FILE * lInfile;
 	   lInfile = fopen(argv[1], "r");	/* open the input file */
-	  
-	    /*find start address of program*/
-	   do{
-	   	lRet = readAndParse( lInfile, lLine, &lLabel, &lOpcode, &lArg1, &lArg2, &lArg3, &lArg4 );
-		if (strcmp(lOpcode, ".orig") == 0){
-                 	orig = toNum(lArg1);
-			/*Error condition to see if the starting address is odd*/
-                 	if(orig%2!=0){
-                 		exit(3);
-                 	}
+
+        /*=================================1st pass: generate symbol table=================================*/
+	   /*rewind(lInfile);*/
+	   do{	
+	 		lRet = readAndParse( lInfile, lLine, &lLabel, &lOpcode, &lArg1, &lArg2, &lArg3, &lArg4 );
+			printf("1st pass");
+			printf("	lRet: %i\n", lRet);
+
+			 /*find start address of program*/
+			if (strcmp(lOpcode, ".orig") == 0){
+        	    orig = toNum(lArg1);
+				/*Error condition to see if the starting address is odd*/
+        	    if(orig%2!=0){
+        	        exit(3);
+        	    }
+        	}
+        	else if (strcmp(lOpcode, ".end") == 0){
+        	         	endDefined = 1;
+        	}
 
 			printf("start addr: %i\n",orig);
-                }
-
-        else if (strcmp(lOpcode, ".end") == 0){
-                 	endDefined = 1;
-                }
-
-	   } while (lRet != DONE);
-
-
-	   /*If there is no .END, then throw an error*/
-	   	if(endDefined == 0){
-	   		error(4);
-	   	}
-
-        /*1st pass: generate symbol table*/
-	   rewind(lInfile);	
-	   do{	
-	 	lRet = readAndParse( lInfile, lLine, &lLabel, &lOpcode, &lArg1, &lArg2, &lArg3, &lArg4 );
-		printf("1st pass");
-		printf("	lRet: %i\n", lRet);
-		/*This if checks to see if the label is a valid label before putting it into the symbol table*/
+			/*check to see if the label is a valid label before putting it into the symbol table*/
 			if (label){
 				int i = 0;
 				while (lLabel[i] != 0){
@@ -353,15 +342,21 @@ int main (int argc, char* argv[]){
 			if (lRet != EMPTY_LINE){
 				ctr++;
 			}
-	    }while( lRet != DONE );
-	
-	int x;
-	for(x=0; x < 50; x++){
-                printf("name: %s	addr: 0x%.4X\n",symbol_table[x].name,symbol_table[x].addr);
-                              
+	    } while( lRet != DONE );
+
+	   	/*printf ("=========> End defined: %i", endDefined);*/
+	      /*If 1st pass did not find .END, then throw an error*/
+	   	if(endDefined == 0){
+	   		error(4);
+	   	}
+
+		 /*print out symbol table*/
+		int x;
+		for(x=0; x < 50; x++){
+                printf("name: %s	addr: 0x%.4X\n",symbol_table[x].name,symbol_table[x].addr);                         
         }
 
-	   /*writeText(mach_code);2nd pass: generate machine code*/
+	   /*===========================2nd pass: generate machine code================================*/
        addrCtr = orig;
 	   rewind(lInfile);
 	   do
@@ -374,7 +369,18 @@ int main (int argc, char* argv[]){
 		printf(" arg2:%s ", lArg2);
 		printf(" arg3:%s\n", lArg3);
 		if( lRet != DONE && lRet != EMPTY_LINE ){
-			/*generate machine code (hex) given the parsed opcodes*/
+				 /*check if register values are between 0 and 7*/
+				if (!(lArg1[0] == 'r' && (lArg1[1] - 0x30) >= 0 && (lArg1[1] - 0x30) <= 7)){
+					exit(4);
+				}
+				if (!(lArg2[0] == 'r' && (lArg2[1] - 0x30) >= 0 && (lArg2[1] - 0x30) <= 7)){
+					exit(4);
+				}
+				if (!(lArg3[0] == 'r' && (lArg3[1] - 0x30) >= 0 && (lArg3[1] - 0x30) <= 7)){
+					exit(4);
+				}
+
+				 /*generate machine code (hex) given the parsed opcodes*/
 				if (strcmp(lOpcode, ".orig") == 0){
 					fprintf( pOutfile, "0x%.4X\n", orig);
 				}
@@ -408,7 +414,6 @@ int main (int argc, char* argv[]){
 						mach_code |= (MASK_ZBIT + MASK_PBIT); /*BRzp*/
 					}
 			
-					/*check if offset is too big!!!*/
 					mach_code += (returnOffset(lArg1, addrCtr, OFFSET9) & MASK_OFFS9); 
 					printf("addrCtr: 0x%.4X 	mach Code: 0x%.4X\n",addrCtr, mach_code);
 					fprintf( pOutfile, "0x%.4X\n", mach_code);

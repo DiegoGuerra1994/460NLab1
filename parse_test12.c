@@ -681,9 +681,11 @@ int main (int argc, char* argv[]){
 					errorcheck4(lArg1, lArg2, lArg3, 0, 1);
 
 				/*Not sure if this is the error check for missing operand*/
-
 					mach_code = toNum(lArg1);
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
+				}
+				else if (strcmp(lOpcode, ".end") == 0){
+					errorcheck4(lArg1, lArg2, lArg3, 0, 0);
 				}
 				else{
 					exit(2);

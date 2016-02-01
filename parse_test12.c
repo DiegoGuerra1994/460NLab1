@@ -598,7 +598,7 @@ int main (int argc, char* argv[]){
 					/*Argument 3 is a register*/
 					else{
 						errorcheck4(lArg1, lArg2, lArg3, 3, 3);
-						mach_code += ((lArg1[1]- 0x30);
+						mach_code += (lArg1[1]- 0x30);
 					}
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}

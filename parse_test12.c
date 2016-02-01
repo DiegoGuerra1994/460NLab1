@@ -196,8 +196,13 @@ int returnOffset(char* symbol, int pointer, int offsBits){
 				int offset =  symbol_table[x].addr - (pointer + 1);
 				/*printf ("2 to power of 11 = %i   ",  1 << 11); */
 				 /*check if offset is within max offset value*/
-				if (offset > (1 << offsBits)){ 
+				offsBits -= 1;
+				int offsetAmount = (1 << offsBits); /*This will be 256 if 9 bits, 1024 if 11 bits*/
+				if (offset >= offsetAmount){ 
 					exit (4);
+				}
+				else if(offset < (offsetAmount*-1)){
+					exit(4);
 				}
 				else{
 					return offset;

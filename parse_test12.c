@@ -598,7 +598,7 @@ int main (int argc, char* argv[]){
 					/*Argument 3 is a register*/
 					else{
 						errorcheck4(lArg1, lArg2, lArg3, 3, 3);
-						mach_code += (lArg1[1]- 0x30);
+						mach_code += (lArg3[1]- 0x30);
 					}
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
@@ -638,11 +638,12 @@ int main (int argc, char* argv[]){
 				}
 				else if(strcmp(lOpcode, "rshfa") == 0){
 					errorcheck4(lArg1, lArg2, lArg3, 2, 3);
-					/*Error checking to see the amount being shifted is within range 0 to 15*/
 					int amount4 = toNum(lArg3);
 					if(amount4 < 0 || amount4 > 15){
 						exit(3);
 					}
+					/*Error checking to see the amount being shifted is within range 0 to 15*/
+					mach_code = (SHF << 12) + ((lArg1[1] - 0x30) << 9)+((lArg2[1] - 0x30) << 6)+ amount4;
 					mach_code |= 0x0030;/*Make bits 5 and 4 11*/
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
@@ -675,6 +676,12 @@ int main (int argc, char* argv[]){
 				else if(strcmp(lOpcode, "nop") == 0){
 					errorcheck4(lArg1, lArg2, lArg3, 0, 0);
 					mach_code = 0x0000;
+					fprintf( pOutfile, "0x%.4X\n", mach_code);
+				}
+				else if(strcmp(lOpcode, "not") == 0){
+					errorcheck4(lArg1, lArg2, lArg3, 2, 2);
+					mach_code = (XOR << 12) + ((lArg1[1] - 0x30)<<9) + ((lArg2[1] - 0x30)<<6);
+					mach_code |= 0x003F;
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, ".fill") == 0){

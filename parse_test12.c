@@ -59,7 +59,7 @@
 	   if( isOpcode( lPtr ) == -1 && lPtr[0] != '.' ){ /* found a label */
 		*pLabel = lPtr;
 		label = 1;
-		printf("label found: %s\n", lPtr);
+		/*printf("label found: %s\n", lPtr); */
 		if( !( lPtr = strtok( NULL, "\t\n ," )))  return( OK );
 	   } /*null pointer may be specified, in which case the function continues scanning 
 	     where a previous successful call to the function ended.*/
@@ -285,7 +285,7 @@ void errorcheck4(char* arg1, char* arg2, char* arg3, int numRegs, int numArgs){
 	if (arg3[0] != '\0'){
 		numbArgs++;
 	}
-	printf("number of arguments: %i\n", numbArgs);
+	/*printf("number of arguments: %i\n", numbArgs); */
 	if (numbArgs != numArgs){
 		exit(4);
 	}
@@ -332,8 +332,8 @@ int main (int argc, char* argv[]){
 	   /*rewind(lInfile);*/
 	   do{	
 	 		lRet = readAndParse( lInfile, lLine, &lLabel, &lOpcode, &lArg1, &lArg2, &lArg3, &lArg4 );
-			printf("1st pass");
-			printf("	lRet: %i\n", lRet);
+			/*printf("1st pass");
+			printf("	lRet: %i\n", lRet); */
 
 			 /*find start address of program*/
 			if (strcmp(lOpcode, ".orig") == 0){
@@ -347,7 +347,7 @@ int main (int argc, char* argv[]){
         	         	endDefined = 1;
         	}
 
-			printf("start addr: %i\n",orig);
+			/*printf("start addr: %i\n",orig); */
 			/*check to see if the label is a valid label before putting it into the symbol table*/
 			if (label){
 				int i = 0;
@@ -374,7 +374,7 @@ int main (int argc, char* argv[]){
 
 				symbol_table[k].addr = orig + ctr;
 				strcpy(symbol_table[k].name, lLabel);
-				printf("label (T/F): %i 1st pass address: %i	label: %s\n", label, symbol_table[k].addr, symbol_table[k].name);
+				/*printf("label (T/F): %i 1st pass address: %i	label: %s\n", label, symbol_table[k].addr, symbol_table[k].name); */
 				label = 0;
 				k++; 
 			}
@@ -390,10 +390,10 @@ int main (int argc, char* argv[]){
 	   	}
 
 		 /*print out symbol table*/
-		int x;
+		/*int x;
 		for(x=0; x < 50; x++){
                 printf("name: %s	addr: 0x%.4X\n",symbol_table[x].name,symbol_table[x].addr);                         
-        }
+        } */
 
 	   /*===========================2nd pass: generate machine code================================*/
        addrCtr = orig;
@@ -403,18 +403,31 @@ int main (int argc, char* argv[]){
 	   	numArgs = 0;
 	   	mach_code = 0;
 	   	lRet = readAndParse( lInfile, lLine, &lLabel, &lOpcode, &lArg1, &lArg2, &lArg3, &lArg4 );
-		printf("label:%s", lLabel);
+		/*printf("label:%s", lLabel);
 		printf(" opcode:%s", lOpcode);
 		printf(" arg1:%s", lArg1);
 		printf(" arg2:%s ", lArg2);
-		printf(" arg3:%s\n", lArg3);
+		printf(" arg3:%s\n", lArg3); */
+
+		/*generate machine code (hex) given the parsed opcodes*/
 		if( lRet != DONE && lRet != EMPTY_LINE ){
 
-				 /*generate machine code (hex) given the parsed opcodes*/
-				if (strcmp(lOpcode, ".orig") == 0){
-					fprintf( pOutfile, "0x%.4X\n", orig);
+				 /* return error if .orig is not the first instruction*/
+				if (addrCtr == orig){
+					if (strcmp(lOpcode, ".orig") == 0){
+						/*check if .orig is too large*/
+						if (toNum(lArg1) < (1 << 16)){
+							fprintf( pOutfile, "0x%.4X\n", orig);
+						}
+						else{
+							exit(4);
+						}			
+					}
+					else{
+						exit(4);
+					}				
 				}
-
+			
 				else if (lOpcode[0] == 'b' && lOpcode[1] == 'r'){
 					/*BRnzp can only have labels*/
 					errorcheck4(lArg1, lArg2, lArg3, 0, 1);
@@ -446,7 +459,7 @@ int main (int argc, char* argv[]){
 					}
 			
 					mach_code += (returnOffset(lArg1, addrCtr, OFFSET9) & MASK_OFFS9); 
-					printf("addrCtr: 0x%.4X 	mach Code: 0x%.4X\n",addrCtr, mach_code);
+					/*printf("addrCtr: 0x%.4X 	mach Code: 0x%.4X\n",addrCtr, mach_code); */
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 
@@ -699,7 +712,7 @@ int main (int argc, char* argv[]){
 				}
 
 				/*fprintf( pOutfile, "0x%.4X\n", mach_code);*/
-				printf("MACH_CODE!:  %i\n", mach_code);
+				/*printf("MACH_CODE!:  %i\n", mach_code); */
 				addrCtr++;
 
 		}

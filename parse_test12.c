@@ -517,13 +517,13 @@ int main (int argc, char* argv[]){
 						exit(4);
 					}
 
-					mach_code = (JSR << 12) + 1<<11 + (returnOffset(lArg1, addrCtr, OFFSET11) & MASK_OFFS11);
+					mach_code = (JSR << 12) + (1<<11) + (returnOffset(lArg1, addrCtr, OFFSET11) & MASK_OFFS11);
 					fprintf( pOutfile, "0x%.4X\n", mach_code);		 
 				}
 
 				else if (strcmp(lOpcode, "jsrr") == 0){
 					errorcheck4(lArg1, lArg2, lArg3, 1, 1);
-					mach_code = (JSR << 12) + ((lArg1[1] - 0x30) << 5);
+					mach_code = (JSR << 12) + ((lArg1[1] - 0x30) << 6);
 					fprintf( pOutfile, "0x%.4X\n", mach_code);		
 				}
 
@@ -620,7 +620,7 @@ int main (int argc, char* argv[]){
 					if(amount4 < 0 || amount4 > 15){
 						exit(3);
 					}
-					mach_code = (SHF << 12) + ((lArg1[1] - 0x30) << 9)+((lArg1[1] - 0x30) << 6)+ amount4;
+					mach_code = (SHF << 12) + ((lArg1[1] - 0x30) << 9)+((lArg2[1] - 0x30) << 6)+ amount4;
 					mach_code &= 0xFFCF; /*Make bits 5 and 4 00*/
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
@@ -631,7 +631,7 @@ int main (int argc, char* argv[]){
 					if(amount4 < 0 || amount4 > 15){
 						exit(3);
 					}
-					mach_code = (SHF << 12) + ((lArg1[1] - 0x30) << 9)+((lArg1[1] - 0x30) << 6)+ amount4;
+					mach_code = (SHF << 12) + ((lArg1[1] - 0x30) << 9)+((lArg2[1] - 0x30) << 6)+ amount4;
 					mach_code &= 0xFFDF;/*clear bit 5*/
 					mach_code |= 0x0010;/*set bit 4*/
 					fprintf( pOutfile, "0x%.4X\n", mach_code);

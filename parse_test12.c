@@ -426,6 +426,10 @@ int main (int argc, char* argv[]){
 		printf(" arg2:%s ", lArg2);
 		printf(" arg3:%s\n", lArg3); */
 
+		 /*check for 4 or more arguments */
+		if (lArg4[0] != '\0'){
+			exit(4);
+		}
 		/*generate machine code (hex) given the parsed opcodes*/
 		if( lRet != DONE && lRet != EMPTY_LINE ){
 

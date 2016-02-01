@@ -1,3 +1,11 @@
+	/*
+	Name 1: Andrew Wong
+	Name 2: Diego Guerra
+	UTEID 1: aw27772
+	UTEID 2: dag3222
+	*/
+
+
 	#include <stdio.h>	/* standard input/output library */
 	#include <stdlib.h>	/* Standard C Library */
 	#include <string.h>	/* String operations library */
@@ -353,12 +361,15 @@ int main (int argc, char* argv[]){
 				int i = 0;
 				while (lLabel[i] != 0){
 					/*Checks to see if it is no alphanumberic, not IN, not OUT, not GETC, not PUTS, doesnt start with x and doesnt start with a number*/
-					if (!isalnum(lLabel[i]) || strcmp(lLabel, "in") == 0 || strcmp(lLabel, "out") == 0 || strcmp(lLabel, "getc") == 0 || strcmp(lLabel, "puts") == 0 || lLabel[0] == 'x'|| isdigit(lLabel[0]) == 1){
+					if (!isalnum(lLabel[i]) || strcmp(lLabel, "in") == 0 || strcmp(lLabel, "out") == 0 || strcmp(lLabel, "getc") == 0 || strcmp(lLabel, "puts") == 0 || lLabel[0] == 'x'|| isdigit(lLabel[0]) != 0){
 						exit(4);
 					} 
+					else if(strlen(lLabel) > 20){
+						exit(4);
+					}
 					/*Label cannot be the same name as a register*/
 					else if(strcmp(lLabel, "r0") == 0 || strcmp(lLabel, "r1") == 0 || strcmp(lLabel, "r2") == 0 || strcmp(lLabel, "r3") == 0 || strcmp(lLabel, "r4") == 0 || strcmp(lLabel, "r5") == 0 || strcmp(lLabel, "r6") == 0 || strcmp(lLabel, "r7") == 0){
-
+						exit(4);
 					}
 					i++;
 				}
@@ -705,7 +716,8 @@ int main (int argc, char* argv[]){
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if (strcmp(lOpcode, ".end") == 0){
-					errorcheck4(lArg1, lArg2, lArg3, 0, 0);
+					break;
+
 				}
 				else{
 					exit(2);

@@ -632,8 +632,8 @@ int main (int argc, char* argv[]){
 						exit(3);
 					}
 					mach_code = (SHF << 12) + ((lArg1[1] - 0x30) << 9)+((lArg1[1] - 0x30) << 6)+ amount4;
-					mach_code &= 0x0020;/*Make bits 5 0*/
-					mach_code |= 0x0010;/*Make bit 4 1*/
+					mach_code &= 0xFFDF;/*clear bit 5*/
+					mach_code |= 0x0010;/*set bit 4*/
 					fprintf( pOutfile, "0x%.4X\n", mach_code);
 				}
 				else if(strcmp(lOpcode, "rshfa") == 0){

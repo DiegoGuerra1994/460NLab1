@@ -4,7 +4,7 @@
 			LDB R0, R0, #0 ; R0 = mask control
 			LEA R1, startaddr
 			LDW R1, R1, #0 ; R1 = x4000 (base addr)
-			AND R2, R2, #0 ; 
+			AND R2, R2, #0 ; clear r2
 			ADD R2, R2, #4 ; R2 = counter
 			LEA R3, storeaddr 
 			LDW R3, R3, #0 ; R3 = x4005 (store addr)

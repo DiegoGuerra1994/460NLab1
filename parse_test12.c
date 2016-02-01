@@ -420,11 +420,7 @@ int main (int argc, char* argv[]){
 	   	numArgs = 0;
 	   	mach_code = 0;
 	   	lRet = readAndParse( lInfile, lLine, &lLabel, &lOpcode, &lArg1, &lArg2, &lArg3, &lArg4 );
-		/*printf("label:%s", lLabel);
-		printf(" opcode:%s", lOpcode);
-		printf(" arg1:%s", lArg1);
-		printf(" arg2:%s ", lArg2);
-		printf(" arg3:%s\n", lArg3); */
+		printf("label:%s 	opcode:%s 	arg1:%s 	arg2:%s 	arg3:%s\n", lLabel, lOpcode, lArg1, lArg2, lArg3); 
 
 		 /*check for 4 or more arguments */
 		if (lArg4[0] != '\0'){

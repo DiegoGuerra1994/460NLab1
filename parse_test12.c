@@ -343,6 +343,11 @@ int main (int argc, char* argv[]){
 			/*printf("1st pass");
 			printf("	lRet: %i\n", lRet); */
 
+	 		  /*return error if multiple .orig*/
+			if (strcmp(lOpcode, ".orig") == 0 && ctr != 0){
+				exit(4);
+			}
+			
 			 /*find start address of program*/
 			if (strcmp(lOpcode, ".orig") == 0){
         	    orig = toNum(lArg1);
@@ -351,6 +356,7 @@ int main (int argc, char* argv[]){
         	        exit(3);
         	    }
         	}
+
         	else if (strcmp(lOpcode, ".end") == 0){
         	         	endDefined = 1;
         	}
@@ -438,6 +444,7 @@ int main (int argc, char* argv[]){
 						exit(4);
 					}				
 				}
+
 			
 				else if (lOpcode[0] == 'b' && lOpcode[1] == 'r'){
 					/*BRnzp can only have labels*/
